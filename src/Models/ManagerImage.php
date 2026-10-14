@@ -23,11 +23,19 @@ class ManagerImage extends Manager
                 mkdir($ppDir, 0755, true);
             }
 
-            $ext = explode("/", $_FILES["src"]["type"])[1];
+            // a comprendre
+            $originalName = $_FILES["src"]["name"];
+            $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+            // a comprendre
+            if (empty($ext)) {
+                $mimeType = $_FILES["src"]["type"];
+                $ext = str_contains($mimeType, 'zip') ? 'zip' : 'bin';
+            }
+
+            // $ext = explode("/", $_FILES["src"]["type"])[1];
             $output_file = "/assets/Img/" . uniqid() . "." . $ext;
-
             move_uploaded_file($_FILES["src"]["tmp_name"], $publicDir . $output_file);
-
 
             $req = $this->bdd->prepare("INSERT INTO images (src, id_user) VALUES (?, ?)");
             $req->execute([

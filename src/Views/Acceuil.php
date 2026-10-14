@@ -20,31 +20,75 @@ ob_start();
 <div class="grid">
     <?php
     foreach ($Users as $User) {
+
+        $src = $User->getSRC();
+        $filePath = __DIR__ . '/../../public/' . ltrim($src, '/');
+        $filename = basename($src);
+
+        $allowedMimes = [
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+            'image/gif',
+            'application/zip',
+            // 'application/x-zip-compressed',
+            // 'multipart/x-zip',
+            'audio/mpeg',
+            'video/quicktime',
+            'video/mp4',
+            'video/x-quicktime',
+            'application/pdf'
+        ];
+
+        // a comprendre
+        if (file_exists($filePath) && !is_dir($filePath)) {
+            $typeMime = mime_content_type($filePath);
+
+            if (in_array($typeMime, $allowedMimes)) {
     ?>
-        <div>
-        <?php 
-        // $src = $User->getSRC();
-        // $filePath = __DIR__ . '/../../public/' . ltrim($src, '/');
-        // $zipMimes = ['application/zip', 'application/x-zip-compressed', 'multipart/x-zip'];
+                <div>
+                    <?php
+                    // a comprendre
+                    if (str_starts_with($typeMime, 'image/')) {
+                    ?>
+                        <div class="img" style="background-image: url('<?php echo $User->getSRC(); ?>');"></div>
+                    <?php
+                    } else if (str_starts_with($typeMime, 'application/pdf')) {
+                    ?>
+                        <div class="img" style="background-image: url('/assets/PDF.png');"></div>
+                    <?php
+                    } else if (str_starts_with($typeMime, 'audio/')) {
+                    ?>
+                        <div class="img">
+                            <audio controls controlsList="nodownload">
+                                <source src="<?php echo $User->getSRC(); ?>">
+                            </audio>
+                        </div>
+                    <?php
+                    } else if (str_starts_with($typeMime, 'video/')) {
+                    ?>
+                        <div class="img">
+                            <video controls controlsList="nodownload">
+                                <source src="<?php echo $User->getSRC(); ?>">
+                            </video>
+                        </div>
+                    <?php
+                    } else if (str_starts_with($typeMime, 'application/zip')) {
+                    ?>
+                        <div class="img" style="background-image: url('/assets/Zip.png');"></div>
+                    <?php
+                    }
+                    ?>
 
-        // if (file_exists($filePath) && mime_content_type($filePath) === "image/jpeg") {
-        // if (file_exists($filePath) && is_dir($filePath)) {
-        //     $typeMime = mime_content_type($filePath);
-
-        //     if (in_array($typeMime, $zipMimes)) {
-        // ?>
-            <div class="img" style="background-image: url('<?php echo $User->getSRC();?>');"></div>
-        <?php 
-        //     }
-        // }
-        ?>
-            <form action="/sup" class="fichier" method="POST">
-                <a href="<?php echo $User->getSRC() ?>" download>Télecharger</a>
-                <input type="hidden" value="<?php echo $User->getId() ?>" name="id" id="id">
-                <button>Supprimer</button>
-            </form>
-        </div>
+                    <form action="/sup" class="fichier" method="POST">
+                        <a href="<?php echo $User->getSRC() ?>" download="<?php echo $filename ?>">Télecharger</a>
+                        <input type="hidden" value="<?php echo $User->getId() ?>" name="id" id="id">
+                        <button>Supprimer</button>
+                    </form>
+                </div>
     <?php
+            }
+        }
     }
     ?>
 </div>
