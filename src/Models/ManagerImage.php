@@ -25,6 +25,7 @@ class ManagerImage extends Manager
 
             // a comprendre
             $originalName = $_FILES["src"]["name"];
+            $srcName = pathinfo($originalName, PATHINFO_FILENAME);
             $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
 
             // a comprendre
@@ -37,10 +38,11 @@ class ManagerImage extends Manager
             $output_file = "/assets/Img/" . uniqid() . "." . $ext;
             move_uploaded_file($_FILES["src"]["tmp_name"], $publicDir . $output_file);
 
-            $req = $this->bdd->prepare("INSERT INTO images (src, id_user) VALUES (?, ?)");
+            $req = $this->bdd->prepare("INSERT INTO images (src, id_user, srcName) VALUES (?, ?, ?)");
             $req->execute([
                 $output_file,
-                $id
+                $id,
+                $srcName
             ]);
 
             header("Location: /");
@@ -61,6 +63,19 @@ class ManagerImage extends Manager
 
     public function sup($id)
     {
+        $reqFile = $this->bdd->prepare("SELECT src FROM images WHERE id = ?");
+        $reqFile->execute([$id]);
+        $image = $reqFile->fetch();
+
+        if ($image && !empty($image['src'])) {
+            $publicDir = realpath(__DIR__ . '/../../public');
+            $filePath = $publicDir . $image['src'];
+
+            if (file_exists($filePath) && !is_dir($filePath)) {
+                unlink($filePath);
+            }
+        }
+
         $req = $this->bdd->prepare("DELETE FROM images WHERE id LIKE ?");
         $req->execute([
             $id

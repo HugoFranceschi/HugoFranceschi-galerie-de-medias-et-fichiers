@@ -22,6 +22,8 @@ ob_start();
     foreach ($Users as $User) {
 
         $src = $User->getSRC();
+        $rawSrcName = $User->getSrcName();
+        $cleanSrcName = pathinfo($rawSrcName, PATHINFO_FILENAME);
         $filePath = __DIR__ . '/../../public/' . ltrim($src, '/');
         $filename = basename($src);
 
@@ -80,6 +82,7 @@ ob_start();
                     }
                     ?>
 
+                    <p class="filename"><?php echo $User->getSrcName()?></p>
                     <form action="/sup" class="fichier" method="POST">
                         <a href="<?php echo $User->getSRC() ?>" download="<?php echo $filename ?>">Télecharger</a>
                         <input type="hidden" value="<?php echo $User->getId() ?>" name="id" id="id">

@@ -9,6 +9,7 @@ class Image implements JsonSerializable
     private $id;
     private $src;
     private $id_user;
+    private $srcName;
 
     public function jsonSerialize(): mixed
     {
@@ -16,6 +17,7 @@ class Image implements JsonSerializable
             "id" => $this->getId(),
             "src" => $this->getSRC(),
             "id_user" => $this->getId_user(),
+            "srcName" => $this->getSrcName(),
         ];
     }
 
@@ -65,5 +67,21 @@ class Image implements JsonSerializable
     public function setId_user($id_user): void
     {
         $this->id_user = $id_user;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSrcName()
+    {
+        return $this->srcName;
+    }
+
+    /**
+     * @param mixed $srcName
+     */
+    public function setSrcName($srcName): void
+    {
+        $this->srcName = $srcName;
     }
 }

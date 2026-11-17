@@ -1,33 +1,36 @@
 main {
   width: 100%;
-  height: 99vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #0f172a;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  padding: 20px;
 }
 
 .bloc {
-  border: black solid 1px;
-  background-color: rgba(128, 128, 128, 0.171);
-  border-radius: 15px;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  width: 100%;
+  max-width: 360px; /* S'adapte sur les petits écrans mobile */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-around;
-  width: 300px;
-}
-.login {
-  height: 150px;
-}
-.registeur {
-  height: 180px;
+  gap: 1.5rem;
 }
 
-.text {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0 10px;
+.login, .registeur {
+  height: auto !important; /* Annule la hauteur fixe pour s'adapter à tous les mobiles */
+}
+
+.bloc h1 {
+  color: #f8fafc;
+  font-size: 1.75rem;
+  font-weight: 700;
 }
 
 form {
@@ -35,16 +38,72 @@ form {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  gap: 10px;
+  gap: 1.2rem;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0;
+}
+
+.text p {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.text input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background-color: #0f172a;
+  color: #f8fafc;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.text input:focus {
+  border-color: #38bdf8;
 }
 
 .lien {
   display: flex;
+  flex-direction: column;
   width: 100%;
-  justify-content: center;
-  gap: 20px;
+  gap: 0.8rem;
+  margin-top: 0.5rem;
 }
 
 button {
-  font-size: 15px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background-color: #0284c7;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #0369a1;
+}
+
+.lien a {
+  color: #38bdf8;
+  text-decoration: none;
+  font-size: 0.85rem;
+  text-align: center;
+  transition: color 0.2s;
+}
+
+.lien a:hover {
+  color: #7dd3fc;
 }
