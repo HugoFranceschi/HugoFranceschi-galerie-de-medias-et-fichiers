@@ -5,6 +5,9 @@ ob_start();
 
 <div class="bloc registeur">
     <h1>Register</h1>
+    <?php if (!empty($_GET['erreur'])): ?>
+        <p class="erreur"><?= escape($_GET['erreur']) ?></p>
+    <?php endif; ?>
     <form action="/logOut" method="POST">
         <div class="text">
             <p>User :</p>

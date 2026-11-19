@@ -4,6 +4,9 @@ ob_start();
 <link rel="stylesheet" href="user.css">
 <div class="bloc login">
     <h1>Login</h1>
+    <?php if (!empty($_GET['erreur'])): ?>
+        <p class="erreur"><?= escape($_GET['erreur']) ?></p>
+    <?php endif; ?>
     <form action="/login" method="POST">
         <div class="text">
             <p>Email :</p>

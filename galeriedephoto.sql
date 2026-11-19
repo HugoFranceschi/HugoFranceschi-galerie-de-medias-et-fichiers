@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1:3306
--- Généré le : mer. 30 sep. 2026 à 05:49
+-- Généré le : jeu. 19 nov. 2026 à 15:30
 -- Version du serveur : 8.4.7
 -- Version de PHP : 8.5.0
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de données : `galeriedephoto`
+-- Base de données : `galeriemedia_galerie`
 --
 
 -- --------------------------------------------------------
@@ -30,30 +30,28 @@ SET time_zone = "+00:00";
 DROP TABLE IF EXISTS `images`;
 CREATE TABLE IF NOT EXISTS `images` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `src` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `src` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `id_user` int NOT NULL,
+  `srcName` text COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `id_user` (`id_user`)
-) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=139 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Déchargement des données de la table `images`
 --
 
-INSERT INTO `images` (`id`, `src`, `id_user`) VALUES
-(9, '/assets/Img/6aa963afc4289.png', 1),
-(15, '/assets/Img/6aa966964c9bc.jpeg', 2),
-(17, '/assets/Img/6aa96750732ab.jpeg', 2),
-(18, '/assets/Img/6aa967972819c.jpeg', 2),
-(19, '/assets/Img/6aa979d04998d.jpeg', 2),
-(20, '/assets/Img/6aa979f0e18cd.jpeg', 10),
-(22, '/assets/Img/6aa98438cdab1.jpeg', 11),
-(26, '/assets/Img/6aaa963a9cece.jpeg', 1),
-(35, '/assets/Img/6aaa9c5838da1.jpeg', 1),
-(48, '/assets/Img/6aafe320d3723.jpeg', 1),
-(52, '/assets/Img/6aafe394ac812.png', 11),
-(55, '/assets/Img/6ab3da997b2c2.jpeg', 1),
-(58, '/assets/Img/6ab3e0672083d.gif', 1);
+INSERT INTO `images` (`id`, `src`, `id_user`, `srcName`) VALUES
+(127, '/assets/Img/6ad08408e8e16.mp4', 1, '【推しの子】Bのリベンジ  B小町【第二十五話「入れ込み」挿入歌】'),
+(128, '/assets/Img/6ad0841ed31ff.mp3', 1, '【推しの子】B小町  POP IN 2【MV short】'),
+(129, '/assets/Img/6ad08486c603e.png', 1, 'danse'),
+(130, '/assets/Img/6ad084cc0e8ac.mp4', 1, '0109'),
+(131, '/assets/Img/6ad084d9a1683.mp4', 1, '0106(1)'),
+(132, '/assets/Img/6ad085b20c40d.zip', 1, 'Nouveau dossier'),
+(133, '/assets/Img/6ad085c37bda4.pdf', 1, 'CV Hugo Franceschi'),
+(135, '/assets/Img/6adcfee4c6efa.jpg', 13, '4514ac19e9af42452137285ec798f52a'),
+(137, '/assets/Img/6adcff148e492.zip', 13, 'resourcepacks'),
+(138, '/assets/Img/6adcff1e1c00f.pdf', 13, 'CV Hugo Franceschi');
 
 -- --------------------------------------------------------
 
@@ -68,23 +66,18 @@ CREATE TABLE IF NOT EXISTS `users` (
   `password` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` text COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Déchargement des données de la table `users`
 --
 
 INSERT INTO `users` (`id`, `name`, `password`, `email`) VALUES
-(1, 'a', '$2y$12$v69Bqa25mBv5/bjc1ZWWneuOT.GMuD.YtJaoUNgovssfdTENbgiN.', 'franceschihugo6@gmail.com'),
-(2, 'b', '$2y$12$NwIXmLmUDpE5XgUMVM/Ho.lZiSmDcmU.rZilGVxesnhuyovQlNiMu', 'b@b.b'),
+(1, 'Nyphi', '$2y$12$v69Bqa25mBv5/bjc1ZWWneuOT.GMuD.YtJaoUNgovssfdTENbgiN.', 'franceschihugo6@gmail.com'),
 (3, 'a', '$2y$12$gHdzBafGImvqhh0x71z33.4m13GVPPzDx3mm84/JoZiiD7AjXxv8a', 'a@a.a'),
-(4, 'd', '$2y$12$aMdHRi5WyusDmzJX7ej61uur9Jnc6xinsYheLAzXKg/OjOoXSr5zi', 'd@d.d'),
-(5, 'c', '$2y$12$8PLYre.mL9fgDBqetDT3uuXHlAZ2tMw5dx52rCGIQSE7pbalKd/L6', 'c@c.c'),
-(6, 'e', '$2y$12$sIRIK4dp7uvuYxYiv0/alO0./KBwzsEDNTYmxnXo/wkMUelmp.vUK', 'e@e.e'),
-(7, 'f', '$2y$12$lbTzF9fuOW3CdA3gpkICsOP.tVe4R9Bps8.tDQw.WjopBmixeHieC', 'f@f.f'),
-(8, 't', '$2y$12$gWqUik7wbIF7tfU1SXuWH.YKQSD37tr4YyRO93wHcc2FrDxTk4Mwe', 't@t.t'),
-(10, 'k', '$2y$12$K0oFhhbJz1dfnYr4k6Oqtebl3Ya5ohla2AsORnkBhX5cvhM4kQVDS', 'k@k.k'),
-(11, 'fred', '$2y$12$ynfdJyInsGuRagy.J3Zj7OYSu05iTvWQdpse9r1jk3uEQaU7bUSPG', 'mickey075@hotmail.fr');
+(11, 'fred', '$2y$12$ynfdJyInsGuRagy.J3Zj7OYSu05iTvWQdpse9r1jk3uEQaU7bUSPG', 'mickey075@hotmail.fr'),
+(12, 'Cédric', '$2y$12$jnsR0Vdd3ReFrKRly2o6/eRXjFjEsLtbI.Vcd.2FGm8ozLfp3m7Ti', 'classale@edenschool.fr'),
+(13, 'lois', '$2y$12$G6pkwuS478kTw6O2Ng9tX.jlVUErNHekh5W8.nHeyXdzvIJ/BusPe', 'lois.pichat@icloud.com');
 
 --
 -- Contraintes pour les tables déchargées

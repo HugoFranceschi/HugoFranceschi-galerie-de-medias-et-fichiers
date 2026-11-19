@@ -8,24 +8,34 @@ class ManagerUsers extends Manager
 {
     public function register($user, $email, $password)
     {
-        $req = $this->bdd->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-        $req->execute([
-            $user,
-            $email,
-            password_hash($password, PASSWORD_BCRYPT)
-        ]);
+        $user = trim((string) $user);
+        $email = strtolower(trim((string) $email));
 
-        return $this->bdd->lastInsertId();
+        $req = $this->bdd->prepare(
+            "INSERT INTO users (name, email, password) VALUES (:name, :email, :password)"
+        );
+        $req->bindValue(':name', $user, \PDO::PARAM_STR);
+        $req->bindValue(':email', $email, \PDO::PARAM_STR);
+        $req->bindValue(':password', password_hash($password, PASSWORD_BCRYPT), \PDO::PARAM_STR);
+        $req->execute();
+
+        return (int) $this->bdd->lastInsertId();
     }
 
     public function login($email, $password)
     {
-        $req = $this->bdd->prepare("SELECT * FROM users WHERE email = ?");
-        $req->execute([$email]);
+        $email = strtolower(trim((string) $email));
+
+        $req = $this->bdd->prepare(
+            "SELECT id, name, email, password FROM users WHERE email = :email LIMIT 1"
+        );
+        $req->bindValue(':email', $email, \PDO::PARAM_STR);
+        $req->execute();
         $user = $req->fetch(\PDO::FETCH_ASSOC);
 
         // On vérifie le mot de passe
         if ($user && password_verify($password, $user['password'])) {
+            unset($user['password']);
             return $user;
         }
 
@@ -34,9 +44,29 @@ class ManagerUsers extends Manager
 
     public function getUser($id)
     {
-        $req = $this->bdd->prepare("SELECT * FROM users WHERE id = ?");
-        $req->execute([$id]);
+        $id = toPositiveInt($id);
+
+        if ($id === null) {
+            return false;
+        }
+
+        $req = $this->bdd->prepare(
+            "SELECT id, name, email FROM users WHERE id = :id LIMIT 1"
+        );
+        $req->bindValue(':id', $id, \PDO::PARAM_INT);
+        $req->execute();
 
         return $req->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    public function emailExists($email): bool
+    {
+        $email = strtolower(trim((string) $email));
+
+        $req = $this->bdd->prepare("SELECT id FROM users WHERE email = :email LIMIT 1");
+        $req->bindValue(':email', $email, \PDO::PARAM_STR);
+        $req->execute();
+
+        return (bool) $req->fetchColumn();
     }
 }

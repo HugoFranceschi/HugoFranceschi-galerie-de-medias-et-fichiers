@@ -9,7 +9,27 @@ function old($field) {
 }
 
 function escape($data) {
-    return stripslashes(trim(htmlspecialchars($data)));
+    if (!is_scalar($data)) {
+        return '';
+    }
+
+    return htmlspecialchars((string) $data, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+/**
+ * Retourne un entier strictement positif, ou null si la valeur est invalide.
+ * Utilisé pour tous les identifiants envoyés par le client (cookie, POST, URL).
+ */
+function toPositiveInt($value): ?int {
+    if (!is_scalar($value)) {
+        return null;
+    }
+
+    $id = filter_var($value, FILTER_VALIDATE_INT, [
+        'options' => ['min_range' => 1],
+    ]);
+
+    return $id === false ? null : (int) $id;
 }
 
 function slugify($str) {

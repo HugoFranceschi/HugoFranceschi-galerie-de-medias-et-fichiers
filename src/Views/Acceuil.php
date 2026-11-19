@@ -7,7 +7,7 @@ ob_start();
     <nav>
         <div class="userName">
             <a href="/login">Connecter</a>
-            <p><?= $name ?></p>
+            <p><?= escape($name) ?></p>
         </div>
         <form action="/image" class="newImg" method="POST" enctype="multipart/form-data">
             <input type="file" required name="src">
@@ -53,7 +53,7 @@ ob_start();
                     // a comprendre
                     if (str_starts_with($typeMime, 'image/')) {
                     ?>
-                        <div class="img" style="background-image: url('<?php echo $User->getSRC(); ?>');"></div>
+                        <div class="img" style="background-image: url('<?= escape($User->getSRC()) ?>');"></div>
                     <?php
                     } else if (str_starts_with($typeMime, 'application/pdf')) {
                     ?>
@@ -63,7 +63,7 @@ ob_start();
                     ?>
                         <div class="img">
                             <audio controls controlsList="nodownload">
-                                <source src="<?php echo $User->getSRC(); ?>">
+                                <source src="<?= escape($User->getSRC()) ?>">
                             </audio>
                         </div>
                     <?php
@@ -71,7 +71,7 @@ ob_start();
                     ?>
                         <div class="img">
                             <video controls controlsList="nodownload">
-                                <source src="<?php echo $User->getSRC(); ?>">
+                                <source src="<?= escape($User->getSRC()) ?>">
                             </video>
                         </div>
                     <?php
@@ -82,10 +82,10 @@ ob_start();
                     }
                     ?>
 
-                    <p class="filename"><?php echo $User->getSrcName()?></p>
+                    <p class="filename"><?= escape($User->getSrcName()) ?></p>
                     <form action="/sup" class="fichier" method="POST">
-                        <a href="<?php echo $User->getSRC() ?>" download="<?php echo $filename ?>">Télecharger</a>
-                        <input type="hidden" value="<?php echo $User->getId() ?>" name="id" id="id">
+                        <a href="<?= escape($User->getSRC()) ?>" download="<?= escape($filename) ?>">Télecharger</a>
+                        <input type="hidden" value="<?= (int) $User->getId() ?>" name="id" id="id">
                         <button>Supprimer</button>
                     </form>
                 </div>
