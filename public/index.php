@@ -15,8 +15,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-require '../src/config/config.php';
-require '../vendor/autoload.php';
+require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'config.php';
+require BASE_PATH . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'autoload.php';
 require SRC . 'helper.php';
 
 if (!APP_DEBUG) {
@@ -32,7 +32,28 @@ if (!APP_DEBUG) {
     });
 }
 
-$router = new Template\Router($_SERVER["REQUEST_URI"]);
+$requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+$requestPath = parse_url($requestUri, PHP_URL_PATH);
+
+if (!is_string($requestPath) || $requestPath === '') {
+    $requestPath = '/';
+}
+
+// Si le site est dans un sous-dossier (BASE_URL=/galerie), on retire
+// ce préfixe avant de donner l'URL au routeur.
+if (BASE_URL !== '') {
+    $basePath = rtrim(BASE_URL, '/');
+
+    if ($requestPath === $basePath || str_starts_with($requestPath, $basePath . '/')) {
+        $requestPath = substr($requestPath, strlen($basePath));
+
+        if ($requestPath === '') {
+            $requestPath = '/';
+        }
+    }
+}
+
+$router = new Template\Router($requestPath);
 
 // Get Routes
 // $router->get('/', "ControllerUser@getLogin");

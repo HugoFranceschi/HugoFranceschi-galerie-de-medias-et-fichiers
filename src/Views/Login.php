@@ -1,13 +1,13 @@
 <?php
 ob_start();
 ?>
-<link rel="stylesheet" href="user.css">
+<link rel="stylesheet" href="<?= escape(baseUrl('user.css')) ?>">
 <div class="bloc login">
     <h1>Login</h1>
     <?php if (!empty($_GET['erreur'])): ?>
         <p class="erreur"><?= escape($_GET['erreur']) ?></p>
     <?php endif; ?>
-    <form action="/login" method="POST">
+    <form action="<?= escape(baseUrl('login')) ?>" method="POST">
         <div class="text">
             <p>Email :</p>
             <input type="email" required name="email" >
@@ -18,7 +18,7 @@ ob_start();
         </div>
         <div class="lien">
             <button>Valider</button>
-            <a href="/logOut">Creé un compte</a>
+            <a href="<?= escape(baseUrl('logOut')) ?>">Creé un compte</a>
         </div>
     </form>
 </div>

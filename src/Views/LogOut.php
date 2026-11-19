@@ -1,14 +1,14 @@
 <?php
 ob_start();
 ?>
-<link rel="stylesheet" href="user.css">
+<link rel="stylesheet" href="<?= escape(baseUrl('user.css')) ?>">
 
 <div class="bloc registeur">
     <h1>Register</h1>
     <?php if (!empty($_GET['erreur'])): ?>
         <p class="erreur"><?= escape($_GET['erreur']) ?></p>
     <?php endif; ?>
-    <form action="/logOut" method="POST">
+    <form action="<?= escape(baseUrl('logOut')) ?>" method="POST">
         <div class="text">
             <p>User :</p>
             <input type="text" required name="user">
@@ -23,7 +23,7 @@ ob_start();
         </div>
         <div class="lien">
             <button type="submit">Enregistre</button>
-            <a href="/login">Ce connecter</a>
+            <a href="<?= escape(baseUrl('login')) ?>">Ce connecter</a>
         </div>
     </form>
 </div>

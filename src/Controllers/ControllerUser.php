@@ -58,7 +58,7 @@ class ControllerUser extends Controller
         }
 
         $this->startUserSession($id, $user);
-        header("Location: /");
+        header("Location: " . baseUrl('/'));
         exit;
     }
 
@@ -84,7 +84,7 @@ class ControllerUser extends Controller
         // On regarde si l'utilisateur existe
         if ($user) {
             $this->startUserSession((int) $user['id'], (string) $user['name']);
-            header('Location: /');
+            header('Location: ' . baseUrl('/'));
             exit;
         }
 
@@ -101,7 +101,7 @@ class ControllerUser extends Controller
 
     private function redirectWithError(string $path, string $message): void
     {
-        header('Location: ' . $path . '?erreur=' . urlencode($message));
+        header('Location: ' . baseUrl($path) . '?erreur=' . urlencode($message));
         exit;
     }
 }

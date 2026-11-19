@@ -24,7 +24,7 @@ class ManagerImage extends Manager
         $userId = toPositiveInt($id);
 
         if ($userId === null) {
-            header('Location: /login');
+            header('Location: ' . baseUrl('login'));
             exit;
         }
 
@@ -69,21 +69,21 @@ class ManagerImage extends Manager
             $this->redirectWithError('Type de fichier non autorise');
         }
 
-        $publicDir = realpath(__DIR__ . '/../../public');
-        if ($publicDir === false) {
+        if (realpath(PUBLIC_DIR) === false) {
             $this->redirectWithError('Erreur interne');
         }
 
-        $ppDir = $publicDir . '/assets/Img';
-        if (!is_dir($ppDir) && !mkdir($ppDir, 0755, true) && !is_dir($ppDir)) {
+        if (!is_dir(UPLOADS_DIR) && !mkdir(UPLOADS_DIR, 0755, true) && !is_dir(UPLOADS_DIR)) {
             $this->redirectWithError('Erreur interne');
         }
 
         // Nom généré côté serveur : impossible d'écraser un fichier existant
         // ou de faire exécuter un script via le nom d'origine.
-        $outputFile = '/assets/Img/' . bin2hex(random_bytes(10)) . '.' . $ext;
+        $fileName = bin2hex(random_bytes(10)) . '.' . $ext;
+        $outputFile = '/assets/Img/' . $fileName; // chemin URL stocké en base
+        $destination = UPLOADS_DIR . DIRECTORY_SEPARATOR . $fileName;
 
-        if (!move_uploaded_file($file['tmp_name'], $publicDir . $outputFile)) {
+        if (!move_uploaded_file($file['tmp_name'], $destination)) {
             $this->redirectWithError('Le televersement a echoue');
         }
 
@@ -97,12 +97,12 @@ class ManagerImage extends Manager
             $req->execute();
         } catch (\PDOException $e) {
             // Pas de fichier orphelin si l'insertion échoue.
-            @unlink($publicDir . $outputFile);
+            @unlink($destination);
             error_log('Insertion image impossible : ' . $e->getMessage());
             $this->redirectWithError('Erreur interne');
         }
 
-        header("Location: /");
+        header("Location: " . baseUrl('/'));
         exit;
     }
 
@@ -141,22 +141,25 @@ class ManagerImage extends Manager
         $image = $reqFile->fetch(\PDO::FETCH_ASSOC);
 
         if ($image && !empty($image['src'])) {
-            $publicDir = realpath(__DIR__ . '/../../public');
+            $imgDir = realpath(UPLOADS_DIR);
 
-            if ($publicDir !== false) {
-                $imgDir = realpath($publicDir . '/assets/Img');
+            if ($imgDir !== false) {
+                // Le chemin stocké en base est une URL : on le convertit
+                // en chemin local valable sur l'OS courant.
+                $relativeSrc = str_replace(
+                    ['/', '\\'],
+                    DIRECTORY_SEPARATOR,
+                    ltrim($image['src'], '/\\')
+                );
+                $filePath = realpath(PUBLIC_DIR . DIRECTORY_SEPARATOR . $relativeSrc);
 
-                if ($imgDir !== false) {
-                    $filePath = realpath($publicDir . $image['src']);
-
-                    // Protection contre toute tentative de traversée de répertoire.
-                    if (
-                        $filePath !== false
-                        && str_starts_with($filePath, $imgDir . DIRECTORY_SEPARATOR)
-                        && is_file($filePath)
-                    ) {
-                        unlink($filePath);
-                    }
+                // Protection contre toute tentative de traversée de répertoire.
+                if (
+                    $filePath !== false
+                    && str_starts_with($filePath, $imgDir . DIRECTORY_SEPARATOR)
+                    && is_file($filePath)
+                ) {
+                    unlink($filePath);
                 }
             }
         }
@@ -172,7 +175,7 @@ class ManagerImage extends Manager
 
     private function redirectWithError(string $message): void
     {
-        header('Location: /?erreur=' . urlencode($message));
+        header('Location: ' . baseUrl('/') . '?erreur=' . urlencode($message));
         exit;
     }
 }

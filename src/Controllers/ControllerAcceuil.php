@@ -30,7 +30,7 @@ class ControllerAcceuil extends Controller
         $userId = $this->currentUserId();
 
         if ($userId === null) {
-            header("Location: /login");
+            header("Location: " . baseUrl('login'));
             exit;
         }
 
@@ -42,7 +42,7 @@ class ControllerAcceuil extends Controller
             if (session_status() === PHP_SESSION_ACTIVE) {
                 session_destroy();
             }
-            header("Location: /login");
+            header("Location: " . baseUrl('login'));
             exit;
         }
 
@@ -53,7 +53,7 @@ class ControllerAcceuil extends Controller
     public function postMethod()
     {
         $this->manager->post();
-        header("Location: /");
+        header("Location: " . baseUrl('/'));
     }
 
     public function postImg()
@@ -61,7 +61,7 @@ class ControllerAcceuil extends Controller
         $userId = $this->currentUserId();
 
         if ($userId === null) {
-            header("Location: /login");
+            header("Location: " . baseUrl('login'));
             exit;
         }
 
@@ -74,18 +74,18 @@ class ControllerAcceuil extends Controller
         $imageId = toPositiveInt($_POST["id"] ?? null);
 
         if ($userId === null) {
-            header("Location: /login");
+            header("Location: " . baseUrl('login'));
             exit;
         }
 
         // Un identifiant invalide ne doit jamais atteindre la base.
         if ($imageId === null) {
-            header("Location: /");
+            header("Location: " . baseUrl('/'));
             exit;
         }
 
         $this->managerImage->sup($imageId, $userId);
-        header("Location: /");
+        header("Location: " . baseUrl('/'));
         exit;
     }
 }

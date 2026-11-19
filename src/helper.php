@@ -17,6 +17,31 @@ function escape($data) {
 }
 
 /**
+ * Construit une URL en tenant compte du préfixe BASE_URL.
+ * baseUrl('login') => /login ou /galerie/login
+ * baseUrl('/')     => / ou /galerie/
+ */
+function baseUrl(string $path = ''): string {
+    $base = rtrim(BASE_URL, '/');
+
+    // On ne touche pas aux URLs externes.
+    if (preg_match('#^(?:https?:)?//#i', $path)) {
+        return $path;
+    }
+
+    if ($path === '' || $path === '/') {
+        return $base === '' ? '/' : $base . '/';
+    }
+
+    // Évite de préfixer deux fois un chemin qui contient déjà BASE_URL.
+    if ($base !== '' && ($path === $base || str_starts_with($path, $base . '/'))) {
+        return $path;
+    }
+
+    return $base . '/' . ltrim($path, '/');
+}
+
+/**
  * Retourne un entier strictement positif, ou null si la valeur est invalide.
  * Utilisé pour tous les identifiants envoyés par le client (cookie, POST, URL).
  */

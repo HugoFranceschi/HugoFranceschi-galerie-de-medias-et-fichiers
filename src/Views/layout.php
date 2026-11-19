@@ -6,9 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title><?= $title ?></title>
     <script src="https://kit.fontawesome.com/c1d0ab37d6.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="<?= escape(baseUrl('style.css')) ?>">
     <?php foreach($styles as $style): ?>
-        <link rel="stylesheet" href="/<?= $style ?>.css">   
+        <link rel="stylesheet" href="<?= escape(baseUrl($style . '.css')) ?>">   
     <?php endforeach; ?>
 </head>
 <body>

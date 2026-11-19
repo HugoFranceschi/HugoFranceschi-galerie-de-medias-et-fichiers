@@ -15,6 +15,6 @@ class ControllerTemplate extends Controller {
 
     public function postMethod() {
         $this->manager->post();
-        header("Location: /");
+        header("Location: " . baseUrl('/'));
     }
 }

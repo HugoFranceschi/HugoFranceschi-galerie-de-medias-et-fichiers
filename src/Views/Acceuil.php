@@ -1,15 +1,15 @@
 <?php
 ob_start();
 ?>
-<link rel="stylesheet" href="acceuil.css">
+<link rel="stylesheet" href="<?= escape(baseUrl('acceuil.css')) ?>">
 
 <header>
     <nav>
         <div class="userName">
-            <a href="/login">Connecter</a>
+            <a href="<?= escape(baseUrl('login')) ?>">Connecter</a>
             <p><?= escape($name) ?></p>
         </div>
-        <form action="/image" class="newImg" method="POST" enctype="multipart/form-data">
+        <form action="<?= escape(baseUrl('image')) ?>" class="newImg" method="POST" enctype="multipart/form-data">
             <input type="file" required name="src">
             <input type="hidden" name="MAX_FILE_SIZE" value="30000" />
             <button>Ajoute</button>
@@ -24,7 +24,8 @@ ob_start();
         $src = $User->getSRC();
         $rawSrcName = $User->getSrcName();
         $cleanSrcName = pathinfo($rawSrcName, PATHINFO_FILENAME);
-        $filePath = __DIR__ . '/../../public/' . ltrim($src, '/');
+        $relativeSrc = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, ltrim((string) $src, '/\\'));
+        $filePath = PUBLIC_DIR . DIRECTORY_SEPARATOR . $relativeSrc;
         $filename = basename($src);
 
         $allowedMimes = [
@@ -53,17 +54,17 @@ ob_start();
                     // a comprendre
                     if (str_starts_with($typeMime, 'image/')) {
                     ?>
-                        <div class="img" style="background-image: url('<?= escape($User->getSRC()) ?>');"></div>
+                        <div class="img" style="background-image: url('<?= escape(baseUrl($User->getSRC())) ?>');"></div>
                     <?php
                     } else if (str_starts_with($typeMime, 'application/pdf')) {
                     ?>
-                        <div class="img" style="background-image: url('/assets/PDF.png');"></div>
+                        <div class="img" style="background-image: url('<?= escape(baseUrl('assets/PDF.png')) ?>');"></div>
                     <?php
                     } else if (str_starts_with($typeMime, 'audio/')) {
                     ?>
                         <div class="img">
                             <audio controls controlsList="nodownload">
-                                <source src="<?= escape($User->getSRC()) ?>">
+                                <source src="<?= escape(baseUrl($User->getSRC())) ?>">
                             </audio>
                         </div>
                     <?php
@@ -71,20 +72,20 @@ ob_start();
                     ?>
                         <div class="img">
                             <video controls controlsList="nodownload">
-                                <source src="<?= escape($User->getSRC()) ?>">
+                                <source src="<?= escape(baseUrl($User->getSRC())) ?>">
                             </video>
                         </div>
                     <?php
                     } else if (str_starts_with($typeMime, 'application/zip')) {
                     ?>
-                        <div class="img" style="background-image: url('/assets/Zip.png');"></div>
+                        <div class="img" style="background-image: url('<?= escape(baseUrl('assets/Zip.png')) ?>');"></div>
                     <?php
                     }
                     ?>
 
                     <p class="filename"><?= escape($User->getSrcName()) ?></p>
-                    <form action="/sup" class="fichier" method="POST">
-                        <a href="<?= escape($User->getSRC()) ?>" download="<?= escape($filename) ?>">Télecharger</a>
+                    <form action="<?= escape(baseUrl('sup')) ?>" class="fichier" method="POST">
+                        <a href="<?= escape(baseUrl($User->getSRC())) ?>" download="<?= escape($filename) ?>">Télecharger</a>
                         <input type="hidden" value="<?= (int) $User->getId() ?>" name="id" id="id">
                         <button>Supprimer</button>
                     </form>

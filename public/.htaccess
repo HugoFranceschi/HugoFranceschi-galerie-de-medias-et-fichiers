@@ -1,0 +1,17 @@
+# Apache sous Linux : le DocumentRoot doit pointer vers le dossier public/.
+# Le site peut être à la racine ou dans un sous-dossier : dans ce cas,
+# définir BASE_URL (ex. /galerie) dans la configuration PHP.
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Les fichiers et dossiers existants (CSS, images, etc.) sont servis directement.
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Toutes les autres URLs passent par le routeur PHP.
+    RewriteRule ^ index.php [L]
+</IfModule>
