@@ -12,9 +12,20 @@ class ControllerUser extends Controller
         return parent::__construct(new ManagerUsers());
     }
 
-    public function getLogOut()
+    public function getRegister()
     {
-        require VIEWS . "LogOut.php";
+        require VIEWS . "Register.php";
+    }
+
+    /**
+     * Ancienne route d'inscription (/logOut) : redirection permanente.
+     * Le routeur ne distingue pas la casse, mais les méthodes HTTP sont
+     * séparées : GET /logout reste sans effet sur la déconnexion POST.
+     */
+    public function getLegacyRegister()
+    {
+        header('Location: ' . baseUrl('register'), true, 301);
+        exit;
     }
 
     public function getLogin()
@@ -28,33 +39,37 @@ class ControllerUser extends Controller
             return;
         }
 
+        if (!verifyCsrfToken()) {
+            $this->redirectWithError('/register', 'Session expirée. Rechargez la page et réessayez.');
+        }
+
         $user = trim((string) ($_POST["user"] ?? ''));
         $email = strtolower(trim((string) ($_POST["email"] ?? '')));
         $password = (string) ($_POST["password"] ?? '');
 
         // Validation stricte avant tout accès à la base.
         if (!preg_match('/^[\pL\pN _.\-]{2,50}$/u', $user)) {
-            $this->redirectWithError('/logOut', 'Le nom doit contenir entre 2 et 50 caractères valides.');
+            $this->redirectWithError('/register', 'Le nom doit contenir entre 2 et 50 caractères valides.');
         }
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 254) {
-            $this->redirectWithError('/logOut', 'Adresse email invalide.');
+            $this->redirectWithError('/register', 'Adresse email invalide.');
         }
 
         // bcrypt ignore silencieusement les octets au-delà de 72.
         if (strlen($password) < 8 || strlen($password) > 72) {
-            $this->redirectWithError('/logOut', 'Le mot de passe doit contenir entre 8 et 72 caractères.');
+            $this->redirectWithError('/register', 'Le mot de passe doit contenir entre 8 et 72 caractères.');
         }
 
         if ($this->manager->emailExists($email)) {
-            $this->redirectWithError('/logOut', 'Un compte existe déjà avec cet email.');
+            $this->redirectWithError('/register', 'Un compte existe déjà avec cet email.');
         }
 
         try {
             $id = $this->manager->register($user, $email, $password);
         } catch (\PDOException $e) {
             error_log('Inscription impossible : ' . $e->getMessage());
-            $this->redirectWithError('/logOut', 'Impossible de créer le compte.');
+            $this->redirectWithError('/register', 'Impossible de créer le compte.');
         }
 
         $this->startUserSession($id, $user);
@@ -69,12 +84,19 @@ class ControllerUser extends Controller
             return;
         }
 
+        if (!verifyCsrfToken()) {
+            $this->redirectWithError('/login', 'Session expirée. Rechargez la page et réessayez.');
+        }
+
+        $this->enforceLoginThrottle();
+
         // On récupère les données du formulaire
         $email = strtolower(trim((string) ($_POST['email'] ?? '')));
         $password = (string) ($_POST['password'] ?? '');
 
         // On vérifie que les champs ne sont pas vides
         if ($email === '' || $password === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->recordLoginFailure();
             $this->redirectWithError('/login', 'Identifiants invalides.');
         }
 
@@ -83,12 +105,47 @@ class ControllerUser extends Controller
 
         // On regarde si l'utilisateur existe
         if ($user) {
+            unset($_SESSION['login_failures'], $_SESSION['login_lock_until']);
             $this->startUserSession((int) $user['id'], (string) $user['name']);
             header('Location: ' . baseUrl('/'));
             exit;
         }
 
+        $this->recordLoginFailure();
         $this->redirectWithError('/login', 'Identifiants invalides.');
+    }
+
+    public function logout()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . baseUrl('/'));
+            exit;
+        }
+
+        if (!verifyCsrfToken()) {
+            $this->redirectWithError('/login', 'Session expirée. Rechargez la page et réessayez.');
+        }
+
+        $_SESSION = [];
+
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', [
+                'expires' => time() - 42000,
+                'path' => $params['path'],
+                'domain' => $params['domain'],
+                'secure' => $params['secure'],
+                'httponly' => $params['httponly'],
+                'samesite' => $params['samesite'] ?? 'Lax',
+            ]);
+        }
+
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_destroy();
+        }
+
+        header('Location: ' . baseUrl('login'));
+        exit;
     }
 
     private function startUserSession(int $id, string $name): void
@@ -97,6 +154,36 @@ class ControllerUser extends Controller
         session_regenerate_id(true);
         $_SESSION['user_id'] = $id;
         $_SESSION['name'] = $name;
+
+        // Nouveau jeton CSRF après changement d'identité.
+        unset($_SESSION['csrf_token']);
+    }
+
+    private function enforceLoginThrottle(): void
+    {
+        $lockUntil = (int) ($_SESSION['login_lock_until'] ?? 0);
+
+        if ($lockUntil > time()) {
+            $minutes = max(1, (int) ceil(($lockUntil - time()) / 60));
+            $this->redirectWithError('/login', 'Trop de tentatives. Réessayez dans ' . $minutes . ' minute(s).');
+        }
+
+        if ($lockUntil > 0) {
+            unset($_SESSION['login_lock_until'], $_SESSION['login_failures']);
+        }
+    }
+
+    private function recordLoginFailure(): void
+    {
+        $failures = (int) ($_SESSION['login_failures'] ?? 0) + 1;
+
+        if ($failures >= 5) {
+            $_SESSION['login_failures'] = 0;
+            $_SESSION['login_lock_until'] = time() + 900;
+            return;
+        }
+
+        $_SESSION['login_failures'] = $failures;
     }
 
     private function redirectWithError(string $path, string $message): void

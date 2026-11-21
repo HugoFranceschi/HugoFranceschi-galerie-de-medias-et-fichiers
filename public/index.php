@@ -1,11 +1,15 @@
 <?php
 
 if (session_status() === PHP_SESSION_NONE) {
+    // Alwaysdata/Apache peut être derrière un proxy : on tient compte de l'en-tête.
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (strtolower((string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https');
+
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => '/',
         'domain' => '',
-        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'secure' => $isHttps,
         'httponly' => true,
         'samesite' => 'Lax',
     ]);
@@ -58,12 +62,14 @@ $router = new Template\Router($requestPath);
 // Get Routes
 // $router->get('/', "ControllerUser@getLogin");
 $router->get('/login', "ControllerUser@getLogin");
-$router->get('/logOut', "ControllerUser@getLogOut");
+$router->get('/register', "ControllerUser@getRegister");
+$router->get('/logout', "ControllerUser@getLegacyRegister");
 $router->get('/', "ControllerAcceuil@getAcceuil");
 
 // Post Routes
 $router->post('/login', "ControllerUser@login");
-$router->post('/logOut', "ControllerUser@register");
+$router->post('/register', "ControllerUser@register");
+$router->post('/logout', "ControllerUser@logout");
 $router->post('/image', "ControllerAcceuil@postImg");
 $router->post('/sup', "ControllerAcceuil@sup");
 

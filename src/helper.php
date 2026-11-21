@@ -77,19 +77,68 @@ function slugify($str) {
 }
 
 function convertToBytes(string $from): ?int {
-    $units = ['B', 'K', 'M', 'G', 'T', 'P'];
-    $number = substr($from, 0, -1);
-    $suffix = strtoupper(substr($from,-1));
+    $from = trim($from);
 
-    //B or no suffix
-    if(is_numeric(substr($suffix, 0, 1))) {
-        return preg_replace('/[^\d]/', '', $from);
-    }
-
-    $exponent = array_flip($units)[$suffix] ?? null;
-    if($exponent === null) {
+    if ($from === '') {
         return null;
     }
 
-    return $number * (1024 ** $exponent);
+    // Valeur déjà en octets (ex. "1048576"), ou -1 pour "illimité".
+    if (is_numeric($from)) {
+        return (int) $from;
+    }
+
+    $units = ['B', 'K', 'M', 'G', 'T', 'P'];
+    $number = substr($from, 0, -1);
+    $suffix = strtoupper(substr($from, -1));
+    $exponent = array_flip($units)[$suffix] ?? null;
+
+    if ($exponent === null || !is_numeric($number)) {
+        return null;
+    }
+
+    return (int) $number * (1024 ** $exponent);
+}
+
+/**
+ * Retourne le jeton CSRF de la session, en le créant si nécessaire.
+ */
+function csrfToken(): string {
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        return '';
+    }
+
+    if (empty($_SESSION['csrf_token']) || !is_string($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+
+    return $_SESSION['csrf_token'];
+}
+
+/**
+ * Champ caché à insérer dans chaque formulaire POST.
+ */
+function csrfField(): string {
+    $token = csrfToken();
+
+    if ($token === '') {
+        return '';
+    }
+
+    return '<input type="hidden" name="csrf_token" value="' . escape($token) . '">';
+}
+
+/**
+ * Vérifie le jeton CSRF envoyé par un formulaire POST.
+ */
+function verifyCsrfToken(): bool {
+    $token = $_POST['csrf_token'] ?? '';
+
+    if (!is_string($token) || $token === '') {
+        return false;
+    }
+
+    $expected = csrfToken();
+
+    return $expected !== '' && hash_equals($expected, $token);
 }

@@ -27,15 +27,24 @@ class Router {
     }
 
     public function run() {
-        if(!isset($this->routes[$_SERVER['REQUEST_METHOD']])){
-            throw new \Exception('REQUEST_METHOD does not exist');
+        // HEAD doit renvoyer les mêmes en-têtes qu'un GET, sans le corps.
+        $method = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'HEAD'
+            ? 'GET'
+            : ($_SERVER['REQUEST_METHOD'] ?? 'GET');
+
+        if (!isset($this->routes[$method])) {
+            http_response_code(405);
+            header('Allow: GET, POST');
+            exit('Méthode non autorisée.');
         }
-        foreach($this->routes[$_SERVER['REQUEST_METHOD']] as $route){
-            if($route->match($this->url)){
+
+        foreach ($this->routes[$method] as $route) {
+            if ($route->match($this->url)) {
                 return $route->call();
             }
         }
-        // throw new \Exception('No matching routes');
+
+        http_response_code(404);
         require VIEWS . '404.php';
     }
 

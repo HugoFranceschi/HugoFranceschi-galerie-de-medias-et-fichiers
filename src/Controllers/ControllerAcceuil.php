@@ -65,7 +65,23 @@ class ControllerAcceuil extends Controller
             exit;
         }
 
-        $this->managerImage->newImage($userId);
+        // Si PHP refuse la requête avant de remplir $_POST, le jeton CSRF
+        // est absent : on affiche d'abord un message sur la taille.
+        $postMax = (int) convertToBytes((string) ini_get('post_max_size'));
+
+        if (
+            $postMax > 0
+            && isset($_SERVER['CONTENT_LENGTH'])
+            && (int) $_SERVER['CONTENT_LENGTH'] > $postMax
+        ) {
+            $this->redirectWithError('Les fichiers sont trop gros (limite du serveur).');
+        }
+
+        if (!verifyCsrfToken()) {
+            $this->redirectWithError('Session expirée. Rechargez la page et réessayez.');
+        }
+
+        $this->managerImage->newImages($userId);
     }
 
     public function sup()
@@ -78,6 +94,10 @@ class ControllerAcceuil extends Controller
             exit;
         }
 
+        if (!verifyCsrfToken()) {
+            $this->redirectWithError('Session expirée. Rechargez la page et réessayez.');
+        }
+
         // Un identifiant invalide ne doit jamais atteindre la base.
         if ($imageId === null) {
             header("Location: " . baseUrl('/'));
@@ -86,6 +106,12 @@ class ControllerAcceuil extends Controller
 
         $this->managerImage->sup($imageId, $userId);
         header("Location: " . baseUrl('/'));
+        exit;
+    }
+
+    private function redirectWithError(string $message): void
+    {
+        header('Location: ' . baseUrl('/') . '?erreur=' . urlencode($message));
         exit;
     }
 }

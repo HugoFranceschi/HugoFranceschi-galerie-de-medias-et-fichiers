@@ -16,7 +16,11 @@ class ManagerUsers extends Manager
         );
         $req->bindValue(':name', $user, \PDO::PARAM_STR);
         $req->bindValue(':email', $email, \PDO::PARAM_STR);
-        $req->bindValue(':password', password_hash($password, PASSWORD_BCRYPT), \PDO::PARAM_STR);
+        $req->bindValue(
+            ':password',
+            password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]),
+            \PDO::PARAM_STR
+        );
         $req->execute();
 
         return (int) $this->bdd->lastInsertId();

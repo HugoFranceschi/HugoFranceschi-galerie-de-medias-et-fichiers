@@ -1,31 +1,31 @@
 <?php
 ob_start();
 ?>
-<link rel="stylesheet" href="<?= escape(baseUrl('user.css')) ?>">
 <div class="bloc login">
-    <h1>Login</h1>
+    <h1>Connexion</h1>
     <?php if (!empty($_GET['erreur'])): ?>
-        <p class="erreur"><?= escape($_GET['erreur']) ?></p>
+        <p class="erreur" role="alert"><?= escape($_GET['erreur']) ?></p>
     <?php endif; ?>
     <form action="<?= escape(baseUrl('login')) ?>" method="POST">
+        <?= csrfField() ?>
         <div class="text">
-            <p>Email :</p>
-            <input type="email" required name="email" >
+            <label for="email">Email</label>
+            <input id="email" type="email" name="email" autocomplete="email" required>
         </div>
         <div class="text">
-            <p>Password :</p>
-            <input type="password" required name="password">
+            <label for="password">Mot de passe</label>
+            <input id="password" type="password" name="password" autocomplete="current-password" required>
         </div>
         <div class="lien">
-            <button>Valider</button>
-            <a href="<?= escape(baseUrl('logOut')) ?>">Creé un compte</a>
+            <button type="submit">Se connecter</button>
+            <a href="<?= escape(baseUrl('register')) ?>">Créer un compte</a>
         </div>
     </form>
 </div>
 
 <?php
-
 $content = ob_get_clean();
-$title = "Titre de la page";
-$styles = [];
+$title = 'Connexion — Galerie Média';
+$description = 'Connexion à la galerie de médias et fichiers.';
+$styles = ['user.css'];
 require VIEWS . 'layout.php';

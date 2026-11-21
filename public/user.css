@@ -1,6 +1,7 @@
 main {
   width: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,17 +24,25 @@ main {
   gap: 1.5rem;
 }
 
-.login, .registeur {
-  height: auto !important; /* Annule la hauteur fixe pour s'adapter à tous les mobiles */
+.login,
+.register {
+  height: auto; /* Annule la hauteur fixe pour s'adapter à tous les mobiles */
 }
 
 .bloc h1 {
   color: #f8fafc;
   font-size: 1.75rem;
   font-weight: 700;
+  text-align: center;
 }
 
-form {
+.bloc > p {
+  color: #94a3b8;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.bloc form {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -49,7 +58,7 @@ form {
   padding: 0;
 }
 
-.text p {
+.text label {
   color: #94a3b8;
   font-size: 0.9rem;
   font-weight: 600;
@@ -62,13 +71,31 @@ form {
   border: 1px solid #334155;
   background-color: #0f172a;
   color: #f8fafc;
+  font-family: inherit;
   font-size: 0.95rem;
-  outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .text input:focus {
   border-color: #38bdf8;
+}
+
+.text input:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+.erreur {
+  color: #fca5a5;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.bloc .hint {
+  text-align: left;
+  width: 100%;
 }
 
 .lien {
@@ -79,21 +106,28 @@ form {
   margin-top: 0.5rem;
 }
 
-button {
+.bloc button {
   width: 100%;
   padding: 10px;
   border: none;
   border-radius: 8px;
-  background-color: #0284c7;
+  background-color: #0369a1;
   color: #ffffff;
+  font-family: inherit;
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
-button:hover {
-  background-color: #0369a1;
+.bloc button:hover {
+  background-color: #075985;
+}
+
+.bloc button:focus-visible,
+.lien a:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
 }
 
 .lien a {

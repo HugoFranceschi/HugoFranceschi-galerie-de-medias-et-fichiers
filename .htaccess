@@ -1,0 +1,13 @@
+# Protection lorsque le projet est placé sous la racine web (ex. Alwaysdata).
+# L'alias /galerie reste accessible ; tout accès direct au projet est refusé.
+# Adapter le préfixe /galerie si BASE_URL change.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # La racine du domaine renvoie vers l'application.
+    RewriteCond %{REQUEST_URI} ^/?$
+    RewriteRule ^ /galerie/ [R=301,L]
+
+    RewriteCond %{REQUEST_URI} !^/galerie(?:[/?]|$) [NC]
+    RewriteRule ^ - [F]
+</IfModule>

@@ -3,6 +3,7 @@ body {
   background-color: #0f172a;
   color: #f8fafc;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -34,26 +35,33 @@ nav {
   align-items: center;
 }
 
-.userName a {
-  color: #38bdf8;
-  font-weight: 600;
-  text-decoration: none;
-  font-size: 0.9rem;
-  padding: 6px 12px;
-  background-color: rgba(56, 189, 248, 0.1);
-  border-radius: 6px;
-  transition: all 0.2s ease;
-}
-
-.userName a:hover {
-  background-color: #38bdf8;
-  color: #0f172a;
-}
-
 .userName p {
   font-size: 1rem;
   font-weight: 700;
   color: #f1f5f9;
+}
+
+.logout-form {
+  margin: 0;
+}
+
+.logout-form button {
+  width: auto;
+  background: transparent;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.logout-form button:hover {
+  color: #f8fafc;
+  border-color: #38bdf8;
 }
 
 /* Formulaire d'upload */
@@ -74,6 +82,10 @@ nav {
   width: 100%;
 }
 
+.newImg .hint {
+  text-align: center;
+}
+
 .newImg input[type="file"]::file-selector-button {
   background: #334155;
   color: #f8fafc;
@@ -86,7 +98,7 @@ nav {
 }
 
 .newImg button {
-  background-color: #0284c7;
+  background-color: #0369a1;
   color: #ffffff;
   border: none;
   padding: 8px 16px;
@@ -98,14 +110,45 @@ nav {
 }
 
 .newImg button:hover {
-  background-color: #0369a1;
+  background-color: #075985;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
 }
 
 .erreur {
-  color: #ef4444;
+  color: #fca5a5;
   font-size: 0.85rem;
   font-weight: 600;
   text-align: center;
+}
+
+.succes {
+  color: #86efac;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.page-error,
+.page-success {
+  padding: 10px 15px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ==========================================================
@@ -114,7 +157,7 @@ nav {
 .grid {
   display: grid;
   /* Utilisation de repeat(auto-fill) pour créer un layout fluide automatique */
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1.25rem;
   padding: 1.25rem;
   max-width: 1400px;
@@ -155,6 +198,11 @@ nav {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+img.img {
+  display: block;
+  object-fit: contain;
 }
 
 video {
@@ -262,6 +310,11 @@ audio {
     width: auto;
   }
 
+  .newImg .hint {
+    text-align: left;
+    white-space: nowrap;
+  }
+
   .grid {
     padding: 2rem 1.5rem;
     gap: 1.5rem;
@@ -271,6 +324,20 @@ audio {
 /* PC / Grand Écran (à partir de 1024px) */
 @media screen and (min-width: 1024px) {
   .grid {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
+
+/* Respect de la préférence système : moins d'animations. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .grid > div:hover {
+    transform: none;
   }
 }
