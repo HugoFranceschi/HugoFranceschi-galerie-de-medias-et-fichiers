@@ -12,7 +12,7 @@ ob_start();
 <?php
 
 $content = ob_get_clean();
-$title = 'Page introuvable — Galerie Média';
+$title = 'Page introuvable - Galerie Média';
 $description = 'La page demandée n’existe pas ou a été déplacée.';
 $styles = ['user.css'];
 require VIEWS . 'layout.php';

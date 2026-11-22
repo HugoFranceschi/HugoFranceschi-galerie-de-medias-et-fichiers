@@ -25,7 +25,7 @@ ob_start();
 
 <?php
 $content = ob_get_clean();
-$title = 'Connexion — Galerie Média';
+$title = 'Connexion - Galerie Média';
 $description = 'Connexion à la galerie de médias et fichiers.';
 $styles = ['user.css'];
 require VIEWS . 'layout.php';

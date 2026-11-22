@@ -45,16 +45,16 @@ $postMaxLabel = trim((string) ini_get('post_max_size'));
     <h2 id="categories-title">Catégories</h2>
     <ul class="category-list">
         <li>
-            <a class="category-chip" href="<?= escape(baseUrl('/')) ?>"<?= $activeCategory === 'all' ? ' aria-current="page"' : '' ?>>Toutes</a>
+            <a class="category-chip" href="<?= escape(baseUrl('/')) ?>" <?= $activeCategory === 'all' ? ' aria-current="page"' : '' ?>>Toutes</a>
         </li>
         <?php foreach ($categories as $Category): ?>
             <?php $categoryId = (string) (int) $Category->getId(); ?>
             <li>
-                <a class="category-chip" href="<?= escape(baseUrl('/')) ?>?categorie=<?= $categoryId ?>"<?= $activeCategory === $categoryId ? ' aria-current="page"' : '' ?>><?= escape($Category->getName()) ?></a>
+                <a class="category-chip" href="<?= escape(baseUrl('/')) ?>?categorie=<?= $categoryId ?>" <?= $activeCategory === $categoryId ? ' aria-current="page"' : '' ?>><?= escape($Category->getName()) ?></a>
             </li>
         <?php endforeach; ?>
         <li>
-            <a class="category-chip" href="<?= escape(baseUrl('/')) ?>?categorie=none"<?= $activeCategory === 'none' ? ' aria-current="page"' : '' ?>>Sans catégorie</a>
+            <a class="category-chip" href="<?= escape(baseUrl('/')) ?>?categorie=none" <?= $activeCategory === 'none' ? ' aria-current="page"' : '' ?>>Sans catégorie</a>
         </li>
     </ul>
 
@@ -186,7 +186,7 @@ $postMaxLabel = trim((string) ini_get('post_max_size'));
                 <select id="image-category-<?= $imageId ?>" name="category">
                     <option value="">Sans catégorie</option>
                     <?php foreach ($categories as $Category): ?>
-                        <option value="<?= (int) $Category->getId() ?>"<?= $imageCategoryId === (int) $Category->getId() ? ' selected' : '' ?>><?= escape($Category->getName()) ?></option>
+                        <option value="<?= (int) $Category->getId() ?>" <?= $imageCategoryId === (int) $Category->getId() ? ' selected' : '' ?>><?= escape($Category->getName()) ?></option>
                     <?php endforeach; ?>
                 </select>
                 <button type="submit">Classer</button>
@@ -207,7 +207,7 @@ $postMaxLabel = trim((string) ini_get('post_max_size'));
 <?php
 
 $content = ob_get_clean();
-$title = 'Galerie Média — ' . $name;
+$title = 'Galerie Média - ' . $name;
 $description = 'Galerie de médias et fichiers de ' . $name . '.';
 $styles = ['acceuil.css'];
 $scripts = ['acceuil.js'];

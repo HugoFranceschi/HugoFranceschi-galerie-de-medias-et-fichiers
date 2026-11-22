@@ -30,7 +30,7 @@ ob_start();
 
 <?php
 $content = ob_get_clean();
-$title = 'Inscription — Galerie Média';
+$title = 'Inscription - Galerie Média';
 $description = 'Création d’un compte pour la galerie de médias et fichiers.';
 $styles = ['user.css'];
 require VIEWS . 'layout.php';
