@@ -88,15 +88,12 @@ class ControllerUser extends Controller
             $this->redirectWithError('/login', 'Session expirée. Rechargez la page et réessayez.');
         }
 
-        $this->enforceLoginThrottle();
-
         // On récupère les données du formulaire
         $email = strtolower(trim((string) ($_POST['email'] ?? '')));
         $password = (string) ($_POST['password'] ?? '');
 
         // On vérifie que les champs ne sont pas vides
         if ($email === '' || $password === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->recordLoginFailure();
             $this->redirectWithError('/login', 'Identifiants invalides.');
         }
 
@@ -105,13 +102,11 @@ class ControllerUser extends Controller
 
         // On regarde si l'utilisateur existe
         if ($user) {
-            unset($_SESSION['login_failures'], $_SESSION['login_lock_until']);
             $this->startUserSession((int) $user['id'], (string) $user['name']);
             header('Location: ' . baseUrl('/'));
             exit;
         }
 
-        $this->recordLoginFailure();
         $this->redirectWithError('/login', 'Identifiants invalides.');
     }
 
@@ -157,33 +152,6 @@ class ControllerUser extends Controller
 
         // Nouveau jeton CSRF après changement d'identité.
         unset($_SESSION['csrf_token']);
-    }
-
-    private function enforceLoginThrottle(): void
-    {
-        $lockUntil = (int) ($_SESSION['login_lock_until'] ?? 0);
-
-        if ($lockUntil > time()) {
-            $minutes = max(1, (int) ceil(($lockUntil - time()) / 60));
-            $this->redirectWithError('/login', 'Trop de tentatives. Réessayez dans ' . $minutes . ' minute(s).');
-        }
-
-        if ($lockUntil > 0) {
-            unset($_SESSION['login_lock_until'], $_SESSION['login_failures']);
-        }
-    }
-
-    private function recordLoginFailure(): void
-    {
-        $failures = (int) ($_SESSION['login_failures'] ?? 0) + 1;
-
-        if ($failures >= 5) {
-            $_SESSION['login_failures'] = 0;
-            $_SESSION['login_lock_until'] = time() + 900;
-            return;
-        }
-
-        $_SESSION['login_failures'] = $failures;
     }
 
     private function redirectWithError(string $path, string $message): void

@@ -63,7 +63,7 @@ sudo chown -R www-data:www-data public/assets/Img
 sudo chmod -R 775 public/assets/Img
 ```
 
-Le fichier `public/.htaccess` force HTTPS, ajoute les en-têtes de sécurité, redirige les URLs vers `index.php` et empêche le listage des dossiers.
+Le fichier `public/.htaccess` force HTTPS, ajoute les en-têtes de sécurité, redirige les URLs vers `index.php` et empêche le listage des dossiers. Le fichier `public/.user.ini` relève `max_file_uploads` à 100 (la valeur PHP par défaut est 20) ; il est pris en compte par PHP-FPM.
 
 ## Déploiement sur Alwaysdata
 
@@ -122,6 +122,17 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 Sinon, envoyer aussi les fichiers médias correspondants.
 
+### 4 bis. Ajouter les catégories à une base existante
+
+Sur une base déjà utilisée, sauvegarder d'abord la base, puis exécuter une seule fois :
+
+```bash
+mysql -h mysql-[compte].alwaysdata.net -u [compte] [compte]_galerie \
+  < migrations/2026-11-21-categories.sql
+```
+
+Cette migration crée la table `categories` et ajoute la colonne `images.id_category`. Elle ne modifie ni les comptes ni les médias existants : les médias déjà présents restent « sans catégorie ». Ne jamais réimporter le dump complet à la place.
+
 ### 5. Créer le site PHP
 
 Dans **Web > Sites** :
@@ -151,7 +162,9 @@ Utiliser les valeurs exactes de l'écran MySQL. Choisir un mot de passe sans esp
 
 - `https://[compte].alwaysdata.net/` doit rediriger vers `/galerie/` (ou vers `/login` si le site est à la racine) ;
 - `/register` crée un compte, `/login` connecte et `/logout` (en POST) déconnecte ;
-- l'envoi accepte plusieurs fichiers à la fois (20 maximum par envoi) ;
+- l'envoi accepte plusieurs fichiers à la fois (100 maximum par envoi, dans la limite de `post_max_size`, 256 Mo sur l'installation actuelle) ;
+- les catégories sont propres à chaque compte : création, renommage, suppression, filtre et classement de chaque média ;
+- chaque média peut être renommé ; le nom affiché et le nom de téléchargement changent, l'URL du fichier reste stable ;
 - vérifier que HTTP redirige vers HTTPS et que les en-têtes de sécurité sont présents ;
 - en cas d'erreur :
   - logs PHP : `/home/[compte]/admin/logs/php/php.log` ;
@@ -166,10 +179,10 @@ Utiliser les valeurs exactes de l'écran MySQL. Choisir un mot de passe sans esp
 
 ## Sécurité
 
-- jeton CSRF vérifié sur tous les formulaires POST (connexion, inscription, envoi, suppression, déconnexion) ;
+- jeton CSRF vérifié sur tous les formulaires POST (connexion, inscription, envoi, suppression, déconnexion, création/renommage/suppression de catégorie, classement et renommage des médias) ;
 - sessions régénérées après connexion et cookie `HttpOnly`, `Secure` et `SameSite=Lax` ;
-- limitation à 5 échecs de connexion par session, puis blocage de 15 minutes ;
 - envois validés par extension et type MIME réel, renommés aléatoirement et stockés hors de tout exécutable PHP ;
+- catégories et médias vérifiés par propriétaire : un compte ne peut ni voir ni modifier les catégories d'un autre ;
 - en-têtes CSP, HSTS, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` et `Permissions-Policy` ;
 - `src/`, `vendor/`, les configurations et les dumps SQL ne sont pas accessibles depuis le web.
 

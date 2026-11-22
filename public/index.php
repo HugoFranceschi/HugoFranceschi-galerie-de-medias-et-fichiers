@@ -72,6 +72,11 @@ $router->post('/register', "ControllerUser@register");
 $router->post('/logout', "ControllerUser@logout");
 $router->post('/image', "ControllerAcceuil@postImg");
 $router->post('/sup', "ControllerAcceuil@sup");
+$router->post('/categorie', "ControllerAcceuil@createCategory");
+$router->post('/categorie/renommer', "ControllerAcceuil@renameCategory");
+$router->post('/categorie/supprimer', "ControllerAcceuil@deleteCategory");
+$router->post('/categorie/image', "ControllerAcceuil@setImageCategory");
+$router->post('/image/renommer', "ControllerAcceuil@renameImage");
 
 
 $router->run();

@@ -3,17 +3,20 @@
 namespace Template\Controllers;
 
 use Template\Controllers\Controller;
+use Template\Models\ManagerCategory;
 use Template\Models\ManagerImage;
 use Template\Models\ManagerUsers;
 
 class ControllerAcceuil extends Controller
 {
     private $managerImage;
+    private $managerCategory;
 
     public function __construct()
     {
         parent::__construct(new ManagerUsers());
         $this->managerImage = new ManagerImage();
+        $this->managerCategory = new ManagerCategory();
     }
 
     /**
@@ -34,7 +37,6 @@ class ControllerAcceuil extends Controller
             exit;
         }
 
-        $Users = $this->managerImage->find($userId);
         $user = $this->manager->getUser($userId);
 
         if (!$user) {
@@ -45,6 +47,27 @@ class ControllerAcceuil extends Controller
             header("Location: " . baseUrl('login'));
             exit;
         }
+
+        $categories = $this->managerCategory->findAll($userId);
+
+        // Filtre : ?categorie=ID ou ?categorie=none (médias sans catégorie).
+        $categoryParam = $_GET['categorie'] ?? null;
+        $uncategorized = $categoryParam === 'none';
+        $categoryFilter = null;
+
+        if (!$uncategorized && is_scalar($categoryParam)) {
+            $candidate = toPositiveInt($categoryParam);
+
+            if ($candidate !== null && $this->managerCategory->belongsToUser($userId, $candidate)) {
+                $categoryFilter = $candidate;
+            }
+        }
+
+        $activeCategory = $uncategorized
+            ? 'none'
+            : ($categoryFilter !== null ? (string) $categoryFilter : 'all');
+
+        $Users = $this->managerImage->find($userId, $categoryFilter, $uncategorized);
 
         $name = $user["name"];
         require VIEWS . "Acceuil.php";
@@ -81,7 +104,135 @@ class ControllerAcceuil extends Controller
             $this->redirectWithError('Session expirée. Rechargez la page et réessayez.');
         }
 
-        $this->managerImage->newImages($userId);
+        $resolved = $this->managerCategory->resolveForUpload(
+            $userId,
+            $_POST['category'] ?? null,
+            $_POST['new_category'] ?? null
+        );
+
+        if ($resolved['error'] !== null) {
+            $this->redirectWithError($resolved['error']);
+        }
+
+        $this->managerImage->newImages($userId, $resolved['id']);
+    }
+
+    public function createCategory()
+    {
+        $userId = $this->requireUserId();
+
+        if (!verifyCsrfToken()) {
+            $this->redirectWithError('Session expirée. Rechargez la page et réessayez.');
+        }
+
+        $name = $this->managerCategory->normalizeName((string) ($_POST['name'] ?? ''));
+
+        if ($name === '') {
+            $this->redirectWithError('Le nom de la catégorie est obligatoire.');
+        }
+
+        if ($this->managerCategory->create($userId, $name) === null) {
+            $this->redirectWithError('Impossible de créer la catégorie.');
+        }
+
+        $this->redirectWithSuccess('Catégorie enregistrée.');
+    }
+
+    public function renameCategory()
+    {
+        $userId = $this->requireUserId();
+
+        if (!verifyCsrfToken()) {
+            $this->redirectWithError('Session expirée. Rechargez la page et réessayez.');
+        }
+
+        $categoryId = toPositiveInt($_POST['id'] ?? null);
+
+        if ($categoryId === null) {
+            $this->redirectWithError('Catégorie introuvable.');
+        }
+
+        $error = $this->managerCategory->rename(
+            $userId,
+            $categoryId,
+            (string) ($_POST['name'] ?? '')
+        );
+
+        if ($error !== null) {
+            $this->redirectWithError($error);
+        }
+
+        $this->redirectWithSuccess('Catégorie renommée.');
+    }
+
+    public function deleteCategory()
+    {
+        $userId = $this->requireUserId();
+
+        if (!verifyCsrfToken()) {
+            $this->redirectWithError('Session expirée. Rechargez la page et réessayez.');
+        }
+
+        $categoryId = toPositiveInt($_POST['id'] ?? null);
+
+        if ($categoryId === null || !$this->managerCategory->delete($userId, $categoryId)) {
+            $this->redirectWithError('Catégorie introuvable.');
+        }
+
+        $this->redirectWithSuccess('Catégorie supprimée. Les médias sont conservés sans catégorie.');
+    }
+
+    public function renameImage()
+    {
+        $userId = $this->requireUserId();
+
+        if (!verifyCsrfToken()) {
+            $this->redirectWithError('Session expirée. Rechargez la page et réessayez.');
+        }
+
+        $imageId = toPositiveInt($_POST['id'] ?? null);
+
+        if ($imageId === null || !$this->managerImage->belongsToUser($imageId, $userId)) {
+            $this->redirectWithError('Média introuvable.');
+        }
+
+        $error = $this->managerImage->rename(
+            $imageId,
+            $userId,
+            (string) ($_POST['name'] ?? '')
+        );
+
+        if ($error !== null) {
+            $this->redirectWithError($error);
+        }
+
+        $this->redirectWithSuccess('Média renommé.');
+    }
+
+    public function setImageCategory()
+    {
+        $userId = $this->requireUserId();
+
+        if (!verifyCsrfToken()) {
+            $this->redirectWithError('Session expirée. Rechargez la page et réessayez.');
+        }
+
+        $imageId = toPositiveInt($_POST['id'] ?? null);
+        $categoryId = toPositiveInt($_POST['category'] ?? null);
+
+        if ($imageId === null || !$this->managerImage->belongsToUser($imageId, $userId)) {
+            $this->redirectWithError('Média introuvable.');
+        }
+
+        if (
+            $categoryId !== null
+            && !$this->managerCategory->belongsToUser($userId, $categoryId)
+        ) {
+            $this->redirectWithError('Catégorie introuvable.');
+        }
+
+        $this->managerImage->setCategory($imageId, $userId, $categoryId);
+        $this->redirectWithSuccess('Catégorie du média mise à jour.');
     }
 
     public function sup()
@@ -109,9 +260,27 @@ class ControllerAcceuil extends Controller
         exit;
     }
 
+    private function requireUserId(): int
+    {
+        $userId = $this->currentUserId();
+
+        if ($userId === null) {
+            header("Location: " . baseUrl('login'));
+            exit;
+        }
+
+        return $userId;
+    }
+
     private function redirectWithError(string $message): void
     {
         header('Location: ' . baseUrl('/') . '?erreur=' . urlencode($message));
+        exit;
+    }
+
+    private function redirectWithSuccess(string $message): void
+    {
+        header('Location: ' . baseUrl('/') . '?succes=' . urlencode($message));
         exit;
     }
 }

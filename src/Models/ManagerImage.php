@@ -19,9 +19,9 @@ class ManagerImage extends Manager
         'mov' => ['video/quicktime'],
     ];
 
-    private const MAX_FILES_PER_REQUEST = 20;
+    private const MAX_FILES_PER_REQUEST = 100;
 
-    public function newImages($id)
+    public function newImages($id, ?int $categoryId = null)
     {
         $userId = toPositiveInt($id);
 
@@ -60,7 +60,7 @@ class ManagerImage extends Manager
         $firstError = null;
 
         foreach ($files as $file) {
-            $error = $this->storeUploadedFile($file, $userId);
+            $error = $this->storeUploadedFile($file, $userId, $categoryId);
 
             if ($error === null) {
                 $added++;
@@ -128,7 +128,7 @@ class ManagerImage extends Manager
      * Valide et enregistre un fichier. Retourne null en cas de succès,
      * sinon un message d'erreur destiné à l'utilisateur.
      */
-    private function storeUploadedFile(array $file, int $userId): ?string
+    private function storeUploadedFile(array $file, int $userId, ?int $categoryId = null): ?string
     {
         $originalName = (string) ($file['name'] ?? '');
         $displayName = $originalName !== '' ? basename($originalName) : 'fichier';
@@ -183,10 +183,16 @@ class ManagerImage extends Manager
 
         try {
             $req = $this->bdd->prepare(
-                "INSERT INTO images (src, id_user, srcName) VALUES (:src, :id_user, :src_name)"
+                "INSERT INTO images (src, id_user, id_category, srcName)
+                 VALUES (:src, :id_user, :id_category, :src_name)"
             );
             $req->bindValue(':src', $outputFile, \PDO::PARAM_STR);
             $req->bindValue(':id_user', $userId, \PDO::PARAM_INT);
+            $req->bindValue(
+                ':id_category',
+                $categoryId,
+                $categoryId === null ? \PDO::PARAM_NULL : \PDO::PARAM_INT
+            );
             $req->bindValue(':src_name', $srcName, \PDO::PARAM_STR);
             $req->execute();
         } catch (\PDOException $e) {
@@ -199,7 +205,12 @@ class ManagerImage extends Manager
         return null;
     }
 
-    public function find($id)
+    /**
+     * @param int|null $categoryFilter Identifiant de catégorie, ou null pour tout.
+     * @param bool     $uncategorized  Ne garder que les médias sans catégorie.
+     * @return Image[]
+     */
+    public function find($id, ?int $categoryFilter = null, bool $uncategorized = false)
     {
         $userId = toPositiveInt($id);
 
@@ -207,12 +218,115 @@ class ManagerImage extends Manager
             return [];
         }
 
-        $stmt = $this->bdd->prepare("SELECT * FROM images WHERE id_user = :id_user");
+        $sql = "SELECT i.*, c.name AS category_name
+                FROM images i
+                LEFT JOIN categories c ON c.id = i.id_category
+                WHERE i.id_user = :id_user";
+
+        if ($uncategorized) {
+            $sql .= " AND i.id_category IS NULL";
+        } elseif ($categoryFilter !== null) {
+            $sql .= " AND i.id_category = :id_category";
+        }
+
+        $sql .= " ORDER BY i.id ASC";
+
+        $stmt = $this->bdd->prepare($sql);
         $stmt->bindValue(':id_user', $userId, \PDO::PARAM_INT);
+
+        if (!$uncategorized && $categoryFilter !== null) {
+            $stmt->bindValue(':id_category', $categoryFilter, \PDO::PARAM_INT);
+        }
+
         $stmt->execute();
         $stmt->setFetchMode(\PDO::FETCH_CLASS, "Template\Models\Image");
 
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Renomme le média affiché. Seul srcName change : le fichier et son URL
+     * restent identiques, donc aucun lien existant n'est cassé.
+     */
+    public function rename(int $imageId, int $userId, string $name): ?string
+    {
+        $req = $this->bdd->prepare(
+            "SELECT src FROM images WHERE id = :id AND id_user = :id_user LIMIT 1"
+        );
+        $req->bindValue(':id', $imageId, \PDO::PARAM_INT);
+        $req->bindValue(':id_user', $userId, \PDO::PARAM_INT);
+        $req->execute();
+        $src = $req->fetchColumn();
+
+        if ($src === false) {
+            return 'Média introuvable.';
+        }
+
+        $name = preg_replace('/[\x00-\x1F\x7F]/u', '', $name);
+        $name = preg_replace('/\s+/u', ' ', (string) $name);
+        $name = trim((string) $name);
+
+        // Si l'utilisateur recopie l'extension, on l'enlève : elle est
+        // ajoutée automatiquement au téléchargement.
+        $extension = strtolower(pathinfo((string) $src, PATHINFO_EXTENSION));
+
+        if ($extension !== '') {
+            $name = preg_replace(
+                '/\.' . preg_quote($extension, '/') . '$/iu',
+                '',
+                $name
+            );
+            $name = trim((string) $name);
+        }
+
+        $name = mb_substr($name, 0, 255);
+
+        if ($name === '') {
+            return 'Le nom du média est obligatoire.';
+        }
+
+        $update = $this->bdd->prepare(
+            "UPDATE images SET srcName = :name WHERE id = :id AND id_user = :id_user"
+        );
+        $update->bindValue(':name', $name, \PDO::PARAM_STR);
+        $update->bindValue(':id', $imageId, \PDO::PARAM_INT);
+        $update->bindValue(':id_user', $userId, \PDO::PARAM_INT);
+        $update->execute();
+
+        return null;
+    }
+
+    public function belongsToUser(int $imageId, int $userId): bool
+    {
+        $req = $this->bdd->prepare(
+            "SELECT id FROM images WHERE id = :id AND id_user = :id_user LIMIT 1"
+        );
+        $req->bindValue(':id', $imageId, \PDO::PARAM_INT);
+        $req->bindValue(':id_user', $userId, \PDO::PARAM_INT);
+        $req->execute();
+
+        return (bool) $req->fetchColumn();
+    }
+
+    /**
+     * Change la catégorie d'un média. La catégorie doit appartenir au même
+     * utilisateur et le média aussi : aucune modification croisée possible.
+     */
+    public function setCategory(int $imageId, int $userId, ?int $categoryId): bool
+    {
+        $sql = "UPDATE images SET id_category = :id_category
+                WHERE id = :id AND id_user = :id_user";
+        $req = $this->bdd->prepare($sql);
+        $req->bindValue(
+            ':id_category',
+            $categoryId,
+            $categoryId === null ? \PDO::PARAM_NULL : \PDO::PARAM_INT
+        );
+        $req->bindValue(':id', $imageId, \PDO::PARAM_INT);
+        $req->bindValue(':id_user', $userId, \PDO::PARAM_INT);
+        $req->execute();
+
+        return $req->rowCount() > 0;
     }
 
     public function sup($id, $userId)

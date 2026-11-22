@@ -76,14 +76,40 @@ nav {
   border: 1px solid #334155;
 }
 
+.newImg-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
 .newImg input[type="file"] {
   font-size: 0.8rem;
   color: #94a3b8;
   width: 100%;
+  min-width: 0;
+}
+
+.newImg select,
+.newImg input[type="text"] {
+  background: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 7px 9px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  min-width: 0;
+}
+
+.newImg input[type="text"]::placeholder {
+  color: #94a3b8;
 }
 
 .newImg .hint {
   text-align: center;
+  color: #94a3b8;
+  font-size: 0.75rem;
 }
 
 .newImg input[type="file"]::file-selector-button {
@@ -115,7 +141,9 @@ nav {
 
 button:focus-visible,
 a:focus-visible,
-input:focus-visible {
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible {
   outline: 2px solid #38bdf8;
   outline-offset: 2px;
 }
@@ -152,6 +180,158 @@ input:focus-visible {
 }
 
 /* ==========================================================
+   CATÉGORIES : FILTRES ET GESTION
+   ========================================================== */
+.categories {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 0;
+}
+
+.categories h2 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  margin-bottom: 0.5rem;
+}
+
+.category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.category-chip {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #334155;
+  background-color: #1e293b;
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.category-chip:hover {
+  border-color: #38bdf8;
+  color: #f8fafc;
+}
+
+.category-chip[aria-current="page"] {
+  background-color: #0369a1;
+  border-color: #38bdf8;
+  color: #ffffff;
+}
+
+.category-manage {
+  margin-top: 0.75rem;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+.category-manage summary {
+  cursor: pointer;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.category-create,
+.category-rename {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+.category-create label {
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.category-manage input[type="text"] {
+  flex: 1;
+  min-width: 150px;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 7px 9px;
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+.category-manage button {
+  background-color: #334155;
+  color: #f8fafc;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.category-manage button:hover {
+  background-color: #475569;
+}
+
+.category-manage-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.category-manage-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  border-top: 1px solid #334155;
+  padding-top: 0.6rem;
+}
+
+.category-manage-list .category-rename {
+  flex: 1;
+  margin-top: 0;
+}
+
+.category-delete button {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+}
+
+.category-delete button:hover {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+
+.category-empty {
+  color: #94a3b8;
+  margin-top: 0.75rem;
+}
+
+.empty-gallery {
+  text-align: center;
+  color: #94a3b8;
+  padding: 1.5rem 1rem 0;
+}
+
+/* ==========================================================
    GRILLE D'AFFICHAGE RESPONSIVE
    ========================================================== */
 .grid {
@@ -166,7 +346,7 @@ input:focus-visible {
 }
 
 /* Carte de média */
-.grid > div {
+.grid > .card {
   background-color: #1e293b;
   border: 1px solid #334155;
   border-radius: 12px;
@@ -174,15 +354,16 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  width: 100% !important;
-  height: 290px !important;
+  justify-content: flex-start;
+  width: 100%;
+  height: auto;
+  gap: 0.4rem;
   padding: 12px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.grid > div:hover {
+.grid > .card:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
 }
@@ -227,9 +408,111 @@ audio {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin: 8px 0;
+  margin: 8px 0 0;
   padding-bottom: 0;
   text-align: center;
+}
+
+.category-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #7dd3fc;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+/* Renommage du média */
+.rename-media {
+  width: 100%;
+  font-size: 0.78rem;
+}
+
+.rename-media summary {
+  color: #94a3b8;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  padding: 2px 0;
+}
+
+.rename-media summary:hover {
+  color: #f8fafc;
+}
+
+.rename-form {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.rename-form input {
+  flex: 1;
+  min-width: 0;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 0.78rem;
+}
+
+.rename-form button {
+  background-color: #0369a1;
+  color: #ffffff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.rename-form button:hover {
+  background-color: #075985;
+}
+
+/* Sélecteur de catégorie sur chaque carte */
+.category-form {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  margin-top: auto;
+}
+
+.category-form select {
+  flex: 1;
+  min-width: 0;
+  background: #0f172a;
+  color: #f8fafc;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-family: inherit;
+  font-size: 0.78rem;
+}
+
+.category-form button {
+  background-color: #334155;
+  color: #f8fafc;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.category-form button:hover {
+  background-color: #475569;
 }
 
 /* Actions (Télécharger & Supprimer) */
@@ -301,9 +584,25 @@ audio {
   }
 
   .newImg {
+    width: 100%;
+  }
+
+  .newImg-fields {
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
-    width: auto;
+  }
+
+  .newImg-fields input[type="file"] {
+    flex: 1 1 240px;
+  }
+
+  .newImg-fields select {
+    flex: 0 1 180px;
+  }
+
+  .newImg-fields input[type="text"] {
+    flex: 0 1 180px;
   }
 
   .newImg button {
@@ -312,7 +611,6 @@ audio {
 
   .newImg .hint {
     text-align: left;
-    white-space: nowrap;
   }
 
   .grid {
@@ -337,7 +635,7 @@ audio {
     animation: none !important;
   }
 
-  .grid > div:hover {
+  .grid > .card:hover {
     transform: none;
   }
 }
